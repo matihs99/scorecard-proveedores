@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scorecard de Proveedores — Oil & Gas Upstream</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { min-height: 100vh; background: #f8f9fb; font-family: 'DM Sans', sans-serif; color: #1e293b; }
+
+/* Header */
+.header { background: #0f172a; color: #fff; padding: 28px 32px 22px; }
+.header-inner { max-width: 920px; margin: 0 auto; }
+.header-tag { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.header-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+.header-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+.header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.header p { font-size: 13px; color: #94a3b8; margin-top: 6px; }
+
+/* Main */
+.main { max-width: 920px; margin: 0 auto; padding: 24px 32px 48px; }
+
+/* Inputs row */
+.inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.input-field, .select-field {
+padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+font-size: 14px; font-family: ‘DM Sans’, sans-serif; background: #fff; outline: none;
+transition: border-color 0.2s;
+}
+.input-field:focus, .select-field:focus { border-color: #94a3b8; }
+.select-field { color: #1e293b; }
+
+/* Weight bar */
+.weight-section { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px 20px; margin-bottom: 24px; }
+.section-label { font-size: 11px; font-weight: 600; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.weight-bar { display: flex; border-radius: 6px; overflow: hidden; height: 10px; width: 100%; }
+.weight-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+.weight-labels span { font-size: 10px; color: #94a3b8; }
+
+/* Layout grid */
+.layout { display: grid; grid-template-columns: 1fr 280px; gap: 24px; }
+@media (max-width: 768px) {
+.layout { grid-template-columns: 1fr; }
+.inputs-row { grid-template-columns: 1fr; }
+}
+
+/* Card */
+.card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 24px; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.legend-text { font-size: 11px; color: #6b7280; }
+
+/* Criterion row */
+.criterion { padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+.criterion:last-of-type { border-bottom: none; }
+.criterion-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.criterion-name { font-weight: 600; font-size: 14px; color: #1e293b; }
+.criterion-desc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.criterion-weight {
+font-size: 11px; font-weight: 700; color: #fff; background: #475569;
+border-radius: 6px; padding: 3px 8px; font-family: ‘Space Mono’, monospace; white-space: nowrap;
+}
+.score-buttons { display: flex; gap: 8px; }
+.score-btn {
+width: 44px; height: 44px; border-radius: 8px; border: 1.5px solid #d1d5db;
+background: #fff; color: #6b7280; font-weight: 500; font-size: 15px;
+cursor: pointer; transition: all 0.15s ease; font-family: ‘DM Sans’, sans-serif;
+}
+.score-btn:hover { border-color: #94a3b8; }
+.score-btn.active { color: #fff; font-weight: 700; }
+
+/* Textarea & save */
+.notes-field {
+width: 100%; margin-top: 16px; padding: 12px 14px; border: 1.5px solid #e2e8f0;
+border-radius: 10px; font-size: 13px; font-family: ‘DM Sans’, sans-serif;
+resize: vertical; outline: none;
+}
+.save-btn {
+margin-top: 16px; width: 100%; padding: 14px; border-radius: 10px; border: none;
+font-weight: 700; font-size: 14px; cursor: pointer; font-family: ‘DM Sans’, sans-serif;
+transition: all 0.2s ease;
+}
+.save-btn.enabled { background: #0f172a; color: #fff; }
+.save-btn.disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+/* Gauge panel */
+.gauge-panel { text-align: center; margin-bottom: 16px; }
+.gauge-svg { transition: all 0.3s ease; }
+.gauge-score { font-size: 36px; font-weight: 800; font-family: ‘Space Mono’, monospace; line-height: 1; }
+.gauge-max { font-size: 11px; color: #9ca3af; margin-top: 4px; font-family: ‘DM Sans’, sans-serif; letter-spacing: 0.05em; }
+.rating-badge {
+display: inline-block; padding: 8px 20px; border-radius: 8px;
+font-weight: 700; font-size: 14px; letter-spacing: 0.02em; margin-top: 12px;
+}
+.progress-note { font-size: 11px; color: #94a3b8; margin-top: 8px; }
+
+/* Breakdown */
+.breakdown-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+.breakdown-label { width: 150px; font-size: 13px; color: #374151; font-weight: 500; flex-shrink: 0; }
+.breakdown-bar-bg { flex: 1; background: #f3f4f6; border-radius: 4px; height: 8px; position: relative; overflow: hidden; }
+.breakdown-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.breakdown-score { width: 30px; text-align: center; font-size: 14px; font-weight: 700; font-family: ‘Space Mono’, monospace; }
+.breakdown-weight { width: 40px; text-align: right; font-size: 12px; color: #9ca3af; }
+.breakdown-weighted { width: 45px; text-align: right; font-size: 13px; font-weight: 600; color: #374151; font-family: ‘Space Mono’, monospace; }
+
+/* History */
+.history-section { margin-top: 32px; }
+.history-item {
+background: #fff; border-radius: 10px; border: 1px solid #e2e8f0;
+padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 8px;
+}
+.history-left { display: flex; align-items: center; gap: 16px; }
+.history-icon {
+width: 40px; height: 40px; border-radius: 10px; display: flex;
+align-items: center; justify-content: center; font-weight: 800;
+font-size: 16px; font-family: ‘Space Mono’, monospace;
+}
+.history-name { font-weight: 600; font-size: 14px; color: #1e293b; }
+.history-meta { font-size: 12px; color: #94a3b8; }
+.history-right { display: flex; align-items: center; gap: 12px; }
+.history-score { font-family: ‘Space Mono’, monospace; font-weight: 700; font-size: 18px; }
+.history-badge { padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; }
+
+/* Export button */
+.export-btn {
+margin-top: 12px; padding: 10px 20px; border-radius: 8px; border: 1.5px solid #e2e8f0;
+background: #fff; color: #475569; font-weight: 600; font-size: 13px;
+cursor: pointer; font-family: ‘DM Sans’, sans-serif; transition: all 0.2s;
+}
+.export-btn:hover { border-color: #94a3b8; background: #f8fafc; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">
+      <div class="header-dot"></div>
+      <span class="header-label">Gestión de Materiales & Logística</span>
+    </div>
+    <h1>Scorecard de Proveedores</h1>
+    <p>Evaluación ponderada — Oil & Gas Upstream</p>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Inputs -->
+  <div class="inputs-row">
+    <input class="input-field" id="supplierName" placeholder="Nombre del proveedor">
+    <select class="select-field" id="category">
+      <option value="">Categoría</option>
+      <option>Tubulares & Casing</option>
+      <option>Químicos de Pozo</option>
+      <option>Servicios de Wireline</option>
+      <option>Transporte & Logística</option>
+      <option>MRO & Consumibles</option>
+      <option>Equipos de Superficie</option>
+      <option>Válvulas & Fittings</option>
+      <option>Otro</option>
+    </select>
+    <input class="input-field" id="period" placeholder="Período (ej: Q1 2026)">
+  </div>
+
+  <!-- Weight bar -->
+
+  <div class="weight-section">
+    <div class="section-label">Distribución de Pesos</div>
+    <div class="weight-bar" id="weightBar"></div>
+    <div class="weight-labels" id="weightLabels"></div>
+  </div>
+
+  <!-- Layout -->
+
+  <div class="layout">
+    <!-- Left: criteria -->
+    <div class="card">
+      <div class="section-label">Evaluación por Criterio</div>
+      <div class="legend" id="legend"></div>
+      <div id="criteriaContainer"></div>
+      <textarea class="notes-field" id="notes" rows="3" placeholder="Observaciones / Plan de acción..."></textarea>
+      <button class="save-btn disabled" id="saveBtn" onclick="saveEvaluation()">Guardar Evaluación</button>
+    </div>
+
+```
+<!-- Right: results -->
+<div>
+  <div class="card gauge-panel" id="gaugePanel">
+    <div class="section-label">Score Ponderado</div>
+    <div id="gaugeContainer"></div>
+    <div id="ratingContainer"></div>
+  </div>
+  <div class="card" id="breakdownPanel" style="display:none; margin-top:16px;">
+    <div class="section-label">Desglose</div>
+    <div id="breakdownContainer"></div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- History -->
+
+  <div class="history-section" id="historySection" style="display:none;">
+    <div class="section-label" id="historyLabel"></div>
+    <div id="historyContainer"></div>
+    <button class="export-btn" onclick="exportCSV()">Exportar a CSV</button>
+  </div>
+</div>
+
+<script>
+const CRITERIA = [
+  { id: "delivery", label: "Cumplimiento de Entrega", weight: 25, description: "OTD (On-Time Delivery) y lead time acordado" },
+  { id: "quality", label: "Calidad / Conformidad", weight: 20, description: "Rechazos, NCRs, cumplimiento de specs" },
+  { id: "hse", label: "HSE & Compliance", weight: 20, description: "Incidentes, certificaciones, auditorías" },
+  { id: "cost", label: "Competitividad de Costos", weight: 15, description: "Precio vs mercado, cost savings, TCO" },
+  { id: "response", label: "Capacidad de Respuesta", weight: 10, description: "Tiempo de cotización, flexibilidad, urgencias" },
+  { id: "docs", label: "Documentación & Admin", weight: 10, description: "Facturas, remitos, certificados, trazabilidad" },
+];
+
+const SCORE_LABELS = { 1: "Crítico", 2: "Deficiente", 3: "Aceptable", 4: "Bueno", 5: "Excelente" };
+const SCORE_COLORS = { 1: "#dc2626", 2: "#f97316", 3: "#eab308", 4: "#22c55e", 5: "#059669" };
+const BAR_COLORS = ["#1e3a5f", "#2563eb", "#0891b2", "#6366f1", "#8b5cf6", "#a855f7"];
+
+const RATINGS = [
+  { key: "A", label: "A — Estratégico", color: "#059669", bg: "#ecfdf5", min: 4.0 },
+  { key: "B", label: "B — Aprobado", color: "#2563eb", bg: "#eff6ff", min: 3.0 },
+  { key: "C", label: "C — Condicional", color: "#f97316", bg: "#fff7ed", min: 2.0 },
+  { key: "D", label: "D — No Recomendado", color: "#dc2626", bg: "#fef2f2", min: 0 },
+];
+
+let scores = {};
+let history = [];
+
+function getRating(score) {
+  for (const r of RATINGS) { if (score >= r.min) return r; }
+  return RATINGS[RATINGS.length - 1];
+}
+
+function init() {
+  // Weight bar
+  const bar = document.getElementById("weightBar");
+  const labels = document.getElementById("weightLabels");
+  CRITERIA.forEach((c, i) => {
+    const seg = document.createElement("div");
+    seg.style.width = c.weight + "%";
+    seg.style.background = BAR_COLORS[i];
+    seg.title = c.label + ": " + c.weight + "%";
+    bar.appendChild(seg);
+    const lbl = document.createElement("span");
+    lbl.textContent = c.weight + "%";
+    labels.appendChild(lbl);
+  });
+
+  // Legend
+  const legend = document.getElementById("legend");
+  for (const [val, label] of Object.entries(SCORE_LABELS)) {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = `<div class="legend-dot" style="background:${SCORE_COLORS[val]}"></div><span class="legend-text">${val} = ${label}</span>`;
+    legend.appendChild(item);
+  }
+
+  // Criteria
+  const container = document.getElementById("criteriaContainer");
+  CRITERIA.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "criterion";
+    div.innerHTML = `
+      <div class="criterion-header">
+        <div><div class="criterion-name">${c.label}</div><div class="criterion-desc">${c.description}</div></div>
+        <span class="criterion-weight">${c.weight}%</span>
+      </div>
+      <div class="score-buttons" id="btns-${c.id}"></div>
+    `;
+    container.appendChild(div);
+    const btns = div.querySelector(`#btns-${c.id}`);
+    for (let v = 1; v <= 5; v++) {
+      const btn = document.createElement("button");
+      btn.className = "score-btn";
+      btn.textContent = v;
+      btn.dataset.value = v;
+      btn.dataset.criterion = c.id;
+      btn.onclick = () => setScore(c.id, v);
+      btns.appendChild(btn);
+    }
+  });
+
+  renderGauge(0);
+}
+
+function setScore(id, value) {
+  scores[id] = value;
+
+  // Update button styles
+  const btns = document.querySelectorAll(`#btns-${id} .score-btn`);
+  btns.forEach(btn => {
+    const v = parseInt(btn.dataset.value);
+    if (v === value) {
+      btn.classList.add("active");
+      btn.style.background = SCORE_COLORS[v];
+      btn.style.borderColor = SCORE_COLORS[v];
+      btn.style.color = "#fff";
+    } else {
+      btn.classList.remove("active");
+      btn.style.background = "#fff";
+      btn.style.borderColor = "#d1d5db";
+      btn.style.color = "#6b7280";
+    }
+  });
+
+  updateResults();
+}
+
+function updateResults() {
+  const scoredCount = CRITERIA.filter(c => scores[c.id]).length;
+  const allScored = scoredCount === CRITERIA.length;
+
+  const weightedTotal = CRITERIA.reduce((sum, c) => sum + ((scores[c.id] || 0) * c.weight) / 100, 0);
+
+  renderGauge(scoredCount > 0 ? weightedTotal : 0);
+
+  // Rating badge
+  const ratingDiv = document.getElementById("ratingContainer");
+  if (scoredCount > 0) {
+    const rating = getRating(weightedTotal);
+    ratingDiv.innerHTML = `
+      <div class="rating-badge" style="background:${rating.bg};color:${rating.color}">${rating.label}</div>
+      ${!allScored ? `<div class="progress-note">${scoredCount} de ${CRITERIA.length} criterios evaluados</div>` : ""}
+    `;
+  } else {
+    ratingDiv.innerHTML = "";
+  }
+
+  // Breakdown
+  const breakdownPanel = document.getElementById("breakdownPanel");
+  const breakdownContainer = document.getElementById("breakdownContainer");
+  if (scoredCount > 0) {
+    breakdownPanel.style.display = "block";
+    breakdownContainer.innerHTML = "";
+    CRITERIA.forEach(c => {
+      const s = scores[c.id] || 0;
+      const ws = s ? (s * c.weight / 100).toFixed(2) : "—";
+      const color = SCORE_COLORS[s] || "#d1d5db";
+      const row = document.createElement("div");
+      row.className = "breakdown-row";
+      row.innerHTML = `
+        <div class="breakdown-label">${c.label}</div>
+        <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${s ? (s/5)*100 : 0}%;background:${color}"></div></div>
+        <div class="breakdown-score" style="color:${color}">${s || "—"}</div>
+        <div class="breakdown-weight">${c.weight}%</div>
+        <div class="breakdown-weighted">${ws}</div>
+      `;
+      breakdownContainer.appendChild(row);
+    });
+  } else {
+    breakdownPanel.style.display = "none";
+  }
+
+  // Save button state
+  const name = document.getElementById("supplierName").value.trim();
+  const btn = document.getElementById("saveBtn");
+  if (name && allScored) {
+    btn.className = "save-btn enabled";
+  } else {
+    btn.className = "save-btn disabled";
+  }
+}
+
+function renderGauge(score) {
+  const size = 160;
+  const radius = (size - 20) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 5) * circumference;
+  const offset = circumference - progress;
+  const center = size / 2;
+  const rating = getRating(score);
+  const color = score > 0 ? rating.color : "#e5e7eb";
+
+  document.getElementById("gaugeContainer").innerHTML = `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="gauge-svg">
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="${color}" stroke-width="10"
+        stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"
+        transform="rotate(-90 ${center} ${center})" style="transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease"/>
+    </svg>
+    <div style="position:relative;margin-top:-${size/2 + 24}px;margin-bottom:${size/2 - 30}px;">
+      <div class="gauge-score" style="color:${color}">${score.toFixed(2)}</div>
+      <div class="gauge-max">/ 5.00</div>
+    </div>
+  `;
+}
+
+function saveEvaluation() {
+  const name = document.getElementById("supplierName").value.trim();
+  const allScored = CRITERIA.every(c => scores[c.id]);
+  if (!name || !allScored) return;
+
+  const weightedTotal = CRITERIA.reduce((sum, c) => sum + (scores[c.id] * c.weight) / 100, 0);
+  const rating = getRating(weightedTotal);
+
+  history.unshift({
+    name,
+    category: document.getElementById("category").value,
+    period: document.getElementById("period").value,
+    scores: { ...scores },
+    total: weightedTotal,
+    rating,
+    notes: document.getElementById("notes").value,
+    date: new Date().toLocaleDateString("es-AR"),
+  });
+
+  // Reset
+  scores = {};
+  document.getElementById("notes").value = "";
+  document.querySelectorAll(".score-btn").forEach(btn => {
+    btn.classList.remove("active");
+    btn.style.background = "#fff";
+    btn.style.borderColor = "#d1d5db";
+    btn.style.color = "#6b7280";
+  });
+  updateResults();
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById("historySection");
+  const container = document.getElementById("historyContainer");
+  const label = document.getElementById("historyLabel");
+
+  if (history.length === 0) { section.style.display = "none"; return; }
+
+  section.style.display = "block";
+  label.textContent = `Evaluaciones Guardadas (${history.length})`;
+  container.innerHTML = "";
+
+  history.forEach(h => {
+    const meta = [h.category, h.period, h.date].filter(Boolean).join(" · ");
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div class="history-left">
+        <div class="history-icon" style="background:${h.rating.bg};color:${h.rating.color}">${h.rating.key}</div>
+        <div>
+          <div class="history-name">${h.name}</div>
+          <div class="history-meta">${meta}</div>
+        </div>
+      </div>
+      <div class="history-right">
+        <span class="history-score" style="color:${h.rating.color}">${h.total.toFixed(2)}</span>
+        <span class="history-badge" style="background:${h.rating.bg};color:${h.rating.color}">${h.rating.label}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function exportCSV() {
+  if (history.length === 0) return;
+  const headers = ["Proveedor", "Categoría", "Período", "Fecha", ...CRITERIA.map(c => c.label), "Score Total", "Rating", "Observaciones"];
+  const rows = history.map(h => [
+    h.name, h.category, h.period, h.date,
+    ...CRITERIA.map(c => h.scores[c.id] || ""),
+    h.total.toFixed(2), h.rating.label, `"${(h.notes || "").replace(/"/g, '""')}"`
+  ]);
+  const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "scorecard_proveedores_" + new Date().toISOString().slice(0, 10) + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Listen for supplier name changes to update save button
+document.getElementById("supplierName").addEventListener("input", updateResults);
+
+init();
+</script>
+
+</body>
+</html>
